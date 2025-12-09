@@ -19,6 +19,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useVoiceNotes } from '../hooks/useVoiceNotes';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { OrbRecordButton } from '../components/OrbRecordButton';
+import { ProModeButton } from '../components/ProModeButton';
 import { Ionicons } from '@expo/vector-icons';
 import { HapticFeedback } from '../utils/haptics';
 import { loadSettingsAsync, saveSettings } from '../storage';
@@ -27,6 +28,7 @@ type RootStackParamList = {
   List: undefined;
   History: undefined;
   Detail: { noteId: string };
+  Lipsync: undefined;
 };
 
 type Nav = StackNavigationProp<RootStackParamList, 'List'>;
@@ -251,6 +253,11 @@ export const VoiceNotesListScreen: React.FC = () => {
     navigation.navigate('History');
   };
 
+  const onPressProMode = () => {
+    HapticFeedback.impact();
+    navigation.navigate('Lipsync');
+  };
+
   const onClosePanel = () => {
     HapticFeedback.selection(); // Light feedback for closing
     // Animate out and hide - increased duration for smoother animation
@@ -281,14 +288,38 @@ export const VoiceNotesListScreen: React.FC = () => {
           onPress: () => HapticFeedback.selection(), // Light feedback on cancel
         },
         {
-          text: 'Delete All',
+          text: 'Continue',
           style: 'destructive',
           onPress: () => {
-            HapticFeedback.error(); // Error/destructive vibration
-            // Delete all notes
-            notes.forEach(note => deleteNote(note.id));
-            setShowSettings(false);
-            Alert.alert('Success', 'All voice notes have been deleted.');
+            // Ask for verification code
+            Alert.prompt(
+              'Verification Required',
+              'Please enter the verification code to confirm deletion:',
+              [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                  onPress: () => HapticFeedback.selection(),
+                },
+                {
+                  text: 'Delete All',
+                  style: 'destructive',
+                  onPress: (code?: string) => {
+                    if (code === '12345') {
+                      HapticFeedback.error(); // Error/destructive vibration
+                      // Delete all notes
+                      notes.forEach(note => deleteNote(note.id));
+                      setShowSettings(false);
+                      Alert.alert('Success', 'All voice notes have been deleted.');
+                    } else {
+                      HapticFeedback.error();
+                      Alert.alert('Error', 'Incorrect verification code. Deletion cancelled.');
+                    }
+                  },
+                },
+              ],
+              'plain-text'
+            );
           },
         },
       ]
@@ -521,12 +552,25 @@ export const VoiceNotesListScreen: React.FC = () => {
       </View>
 
       <View style={styles.footer}>
-        <OrbRecordButton
-          isRecording={isRecording}
-          onPress={onPressRecord}
-          size={75}
-          currentLevel={currentLevel}
-        />
+        <View style={styles.footerContent}>
+          {/* Pro Mode Button - Left */}
+          <View style={styles.footerSide}>
+            <ProModeButton onPress={onPressProMode} disabled={isRecording} />
+          </View>
+
+          {/* Recording Button - Center */}
+          <View style={styles.footerCenter}>
+            <OrbRecordButton
+              isRecording={isRecording}
+              onPress={onPressRecord}
+              size={75}
+              currentLevel={currentLevel}
+            />
+          </View>
+
+          {/* Spacer - Right (for visual balance) */}
+          <View style={styles.footerSide} />
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -661,6 +705,20 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 30,
+    alignItems: 'center',
+  },
+  footerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  footerSide: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  footerCenter: {
+    flex: 1,
     alignItems: 'center',
   },
   bigRecordButton: {

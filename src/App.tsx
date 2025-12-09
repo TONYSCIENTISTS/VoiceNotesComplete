@@ -11,6 +11,7 @@ export type RootStackParamList = {
   List: undefined;
   Detail: { noteId: string };
   History: undefined;
+  Lipsync: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -37,6 +38,11 @@ const App: React.FC = () => {
           <Stack.Screen
             name="History"
             getComponent={() => require('./screens/HistoryScreen').HistoryScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Lipsync"
+            getComponent={() => require('./screens/LipsyncScreen').LipsyncScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

@@ -45,3 +45,4 @@ yarn-error.*
 !/ios/Native*.swift
 !/ios/Native*.m
 
+*.zip

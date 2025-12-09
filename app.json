@@ -2,6 +2,7 @@
   "expo": {
     "name": "VoiceNotesComplete",
     "slug": "VoiceNotesComplete",
+    "owner": "strapabl",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,16 +14,24 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.strapssh.VoiceNotesComplete"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#05060b"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.strapssh.VoiceNotesComplete"
+      "package": "com.strapssh.VoiceNotesComplete",
+      "permissions": [
+        "INTERNET",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "plugins": [
       [
@@ -30,10 +39,16 @@
         {
           "microphonePermission": "Allow Voice Notes to access your microphone to record notes."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "798a6d29-a198-4e30-9e28-0054754c305d"
+      }
     }
   }
 }

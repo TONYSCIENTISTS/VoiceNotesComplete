@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import { AISummaryResult } from './types';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? 'http://192.168.1.37:4000';
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? 'https://backend-jdue.onrender.com';
 
 export async function uploadAudioForTranscription(
   fileUri: string
