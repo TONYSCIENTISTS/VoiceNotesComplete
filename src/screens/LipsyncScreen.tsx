@@ -164,7 +164,6 @@ export const LipsyncScreen: React.FC = () => {
                 </TouchableOpacity>
 
                 <Text style={styles.infoText}>
-                    Powered by wawa-lipsync
                 </Text>
             </View>
         </SafeAreaView>
