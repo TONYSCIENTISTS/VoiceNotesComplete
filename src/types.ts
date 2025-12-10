@@ -21,3 +21,18 @@ export interface VoiceNote {
   lastRetryAt?: string; // ISO string
   needsTranscription?: boolean; // True if offline when created
 }
+
+export type RootStackParamList = {
+  List: undefined;
+  History: undefined;
+  Detail: { noteId: string };
+  Lipsync: undefined;
+};
+
+export type AppSettings = {
+  hapticsEnabled: boolean;
+};
+
+export const defaultSettings: AppSettings = {
+  hapticsEnabled: true,
+};

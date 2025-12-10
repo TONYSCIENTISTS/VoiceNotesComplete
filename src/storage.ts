@@ -1,80 +1,111 @@
 // src/storage.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { VoiceNote } from './types';
+import { VoiceNote, AppSettings, defaultSettings } from './types';
 
 // Try to use MMKV for performance (100x faster than AsyncStorage)
 // Falls back to AsyncStorage in Expo Go
-let storage: any;
+let mmkvStorage: any;
 let useMMKV = false;
 
 try {
   const { MMKV } = require('react-native-mmkv');
-  storage = new MMKV();
+  mmkvStorage = new MMKV();
   useMMKV = true;
   console.log('[Storage] Using MMKV (high-performance mode)');
 } catch (err) {
   console.log('[Storage] Using AsyncStorage (Expo Go fallback)');
 }
 
-const KEY = 'voicenotes_v1';
+const NOTES_KEY = 'voicenotes_v1';
+const SETTINGS_KEY = 'settings_v1';
+
+// -----------------------------------------------------------------------------
+// Storage Helpers (Abstraction Layer)
+// -----------------------------------------------------------------------------
+
+/**
+ * Sync storage helper (MMKV only)
+ */
+const storageSync = {
+  active: () => useMMKV && mmkvStorage,
+  getItem: (key: string): string | null => {
+    if (!useMMKV || !mmkvStorage) return null;
+    return mmkvStorage.getString(key) ?? null;
+  },
+  setItem: (key: string, value: string) => {
+    if (useMMKV && mmkvStorage) mmkvStorage.set(key, value);
+  },
+  removeItem: (key: string) => {
+    if (useMMKV && mmkvStorage) mmkvStorage.delete(key);
+  }
+};
+
+/**
+ * Async storage helper (AsyncStorage)
+ */
+const storageAsync = {
+  getItem: async (key: string): Promise<string | null> => {
+    return await AsyncStorage.getItem(key);
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    return await AsyncStorage.setItem(key, value);
+  },
+  removeItem: async (key: string): Promise<void> => {
+    return await AsyncStorage.removeItem(key);
+  }
+};
+
+// -----------------------------------------------------------------------------
+// Voice Notes Operations
+// -----------------------------------------------------------------------------
 
 /**
  * Load all voice notes from storage
- * Uses MMKV if available, AsyncStorage otherwise
+ * Uses MMKV if available (sync), otherwise returns empty array (async loading in background)
  */
 export function loadNotes(): VoiceNote[] {
   try {
-    if (useMMKV && storage) {
-      // MMKV - synchronous and fast!
-      const raw = storage.getString(KEY);
+    if (storageSync.active()) {
+      const raw = storageSync.getItem(NOTES_KEY);
       if (!raw) return [];
       return JSON.parse(raw);
-    } else {
-      // AsyncStorage fallback - need to handle async in a sync context
-      // This will return empty on first call, but notes will be loaded via loadNotesAsync
-      return [];
     }
+    // AsyncStorage fallback handling is done via loadNotesAsync
+    return [];
   } catch (err) {
-    console.error('[Storage] Failed to load notes:', err);
+    console.error('[Storage] Failed to load notes (sync):', err);
     return [];
   }
 }
 
 /**
- * Load notes asynchronously (for AsyncStorage fallback)
+ * Load notes asynchronously (Required for AsyncStorage fallback)
  */
 export async function loadNotesAsync(): Promise<VoiceNote[]> {
   try {
-    if (useMMKV && storage) {
-      // MMKV is sync, just return directly
-      const raw = storage.getString(KEY);
-      if (!raw) return [];
-      return JSON.parse(raw);
-    } else {
-      // AsyncStorage
-      const raw = await AsyncStorage.getItem(KEY);
-      if (!raw) return [];
-      return JSON.parse(raw);
+    if (storageSync.active()) {
+      return loadNotes();
     }
+    const raw = await storageAsync.getItem(NOTES_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
   } catch (err) {
-    console.error('[Storage] Failed to load notes:', err);
+    console.error('[Storage] Failed to load notes (async):', err);
     return [];
   }
 }
 
 /**
  * Save all voice notes to storage
- * Synchronous with MMKV, async with AsyncStorage
  */
 export function saveNotes(notes: VoiceNote[]): void {
   try {
-    if (useMMKV && storage) {
-      // MMKV - synchronous save
-      storage.set(KEY, JSON.stringify(notes));
+    const json = JSON.stringify(notes);
+    if (storageSync.active()) {
+      storageSync.setItem(NOTES_KEY, json);
     } else {
-      // AsyncStorage - fire and forget
-      AsyncStorage.setItem(KEY, JSON.stringify(notes)).catch(err => {
-        console.error('[Storage] Failed to save notes:', err);
+      storageAsync.setItem(NOTES_KEY, json).catch(err => {
+        console.error('[Storage] Failed to save notes (async):', err);
       });
     }
   } catch (err) {
@@ -87,23 +118,69 @@ export function saveNotes(notes: VoiceNote[]): void {
  */
 export async function clearNotes(): Promise<void> {
   try {
-    if (useMMKV && storage) {
-      storage.delete(KEY);
+    if (storageSync.active()) {
+      storageSync.removeItem(NOTES_KEY);
     } else {
-      await AsyncStorage.removeItem(KEY);
+      await storageAsync.removeItem(NOTES_KEY);
     }
   } catch (err) {
     console.error('[Storage] Failed to clear notes:', err);
   }
 }
 
-/**
- * Get storage statistics
- */
+// -----------------------------------------------------------------------------
+// Settings Operations
+// -----------------------------------------------------------------------------
+
+export function loadSettings(): AppSettings {
+  try {
+    if (storageSync.active()) {
+      const raw = storageSync.getItem(SETTINGS_KEY);
+      if (!raw) return defaultSettings;
+      return JSON.parse(raw);
+    }
+    return defaultSettings;
+  } catch (e) {
+    return defaultSettings;
+  }
+}
+
+export async function loadSettingsAsync(): Promise<AppSettings> {
+  try {
+    if (storageSync.active()) {
+      return loadSettings();
+    }
+    const raw = await storageAsync.getItem(SETTINGS_KEY);
+    if (!raw) return defaultSettings;
+    return JSON.parse(raw);
+  } catch (e) {
+    return defaultSettings;
+  }
+}
+
+export function saveSettings(settings: AppSettings): void {
+  try {
+    const raw = JSON.stringify(settings);
+    if (storageSync.active()) {
+      storageSync.setItem(SETTINGS_KEY, raw);
+    } else {
+      storageAsync.setItem(SETTINGS_KEY, raw).catch(e => {
+        console.error('Failed to save settings:', e);
+      });
+    }
+  } catch (e) {
+    console.error('Failed to save settings:', e);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Debug / Info
+// -----------------------------------------------------------------------------
+
 export function getStorageInfo() {
   try {
-    if (useMMKV && storage) {
-      const raw = storage.getString(KEY);
+    if (storageSync.active()) {
+      const raw = storageSync.getItem(NOTES_KEY);
       const size = raw ? new Blob([raw]).size : 0;
       const count = raw ? JSON.parse(raw).length : 0;
 
@@ -128,55 +205,5 @@ export function getStorageInfo() {
       sizeBytes: 0,
       sizeKB: '0.00',
     };
-  }
-}
-
-const SETTINGS_KEY = 'settings_v1';
-
-export type AppSettings = {
-  hapticsEnabled: boolean;
-};
-
-export const defaultSettings: AppSettings = {
-  hapticsEnabled: true,
-};
-
-export function loadSettings(): AppSettings {
-  try {
-    if (useMMKV && storage) {
-      const raw = storage.getString(SETTINGS_KEY);
-      if (!raw) return defaultSettings;
-      return JSON.parse(raw);
-    }
-    return defaultSettings;
-  } catch (e) {
-    return defaultSettings;
-  }
-}
-
-export async function loadSettingsAsync(): Promise<AppSettings> {
-  try {
-    if (useMMKV && storage) {
-      return loadSettings();
-    } else {
-      const raw = await AsyncStorage.getItem(SETTINGS_KEY);
-      if (!raw) return defaultSettings;
-      return JSON.parse(raw);
-    }
-  } catch (e) {
-    return defaultSettings;
-  }
-}
-
-export function saveSettings(settings: AppSettings): void {
-  try {
-    const raw = JSON.stringify(settings);
-    if (useMMKV && storage) {
-      storage.set(SETTINGS_KEY, raw);
-    } else {
-      AsyncStorage.setItem(SETTINGS_KEY, raw);
-    }
-  } catch (e) {
-    console.error('Failed to save settings:', e);
   }
 }

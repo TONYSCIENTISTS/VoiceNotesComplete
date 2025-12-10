@@ -33,7 +33,7 @@ export const Avatar: React.FC<AvatarProps> = ({ character = 'aima' }) => {
         const loadModel = async () => {
             try {
                 const asset = character === 'sara'
-                    ? Asset.fromModule(require('../../assets/models/ManCharacter.glb'))
+                    ? Asset.fromModule(require('../../assets/models/Sara.glb'))
                     : Asset.fromModule(require('../../assets/models/6936b0da347390125d6069ae.glb'));
 
                 await asset.downloadAsync();

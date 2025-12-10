@@ -19,22 +19,12 @@ import { useVoiceNotes } from '../hooks/useVoiceNotes';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { AudioSession } from '../nativeModules/NativeAudioSession';
 import { HapticFeedback } from '../utils/haptics';
-
-type RootStackParamList = {
-  List: undefined;
-  Detail: { noteId: string };
-  History: undefined;
-};
+import { RootStackParamList } from '../types';
+import { formatDuration } from '../utils/format';
 
 type DetailRoute = RouteProp<RootStackParamList, 'Detail'>;
 type Nav = StackNavigationProp<RootStackParamList, 'Detail'>;
 
-function formatDuration(ms: number): string {
-  const seconds = Math.round(ms / 1000);
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
 
 export const VoiceNoteDetailScreen: React.FC = () => {
   const route = useRoute<DetailRoute>();
@@ -219,7 +209,7 @@ export const VoiceNoteDetailScreen: React.FC = () => {
           {note.transcriptStatus === 'pending' ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#00D4FF" />
-              <Text style={styles.loadingText}>Transcribing...</Text>
+              <Text style={styles.loadingText}>Transcribing</Text>
             </View>
           ) : note.transcriptStatus === 'error' ? (
             <Text style={styles.errorText}>Transcription failed</Text>
@@ -230,7 +220,7 @@ export const VoiceNoteDetailScreen: React.FC = () => {
                 value={editedTranscript}
                 onChangeText={setEditedTranscript}
                 multiline
-                placeholder="Enter transcript..."
+                placeholder="Enter transcript"
                 placeholderTextColor="#555"
               />
               <View style={styles.editActions}>

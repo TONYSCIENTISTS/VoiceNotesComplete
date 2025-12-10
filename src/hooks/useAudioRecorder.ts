@@ -99,7 +99,7 @@ export function useAudioRecorder() {
 
             // If still 0 or undefined, try loading the audio file to get real duration
             if (!finalDuration || finalDuration === 0) {
-                console.log('[stopRecording] Duration is 0, trying to load audio for real duration...');
+                console.log('[stopRecording] Duration is 0, trying to load audio for real duration');
                 try {
                     const { sound } = await Audio.Sound.createAsync({ uri });
                     const loadStatus = await sound.getStatusAsync();

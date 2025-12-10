@@ -5,14 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { VoiceNotesListScreen } from './screens/VoiceNotesListScreen';
 import { VoiceNoteDetailScreen } from './screens/VoiceNoteDetailScreen';
-import { VoiceNote } from './types';
-
-export type RootStackParamList = {
-  List: undefined;
-  Detail: { noteId: string };
-  History: undefined;
-  Lipsync: undefined;
-};
+import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

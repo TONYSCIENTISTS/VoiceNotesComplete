@@ -3,7 +3,7 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 
 async function testTranscription() {
-    console.log('🎤 Testing Transcription with owl audio file...\n');
+    console.log('🎤 Testing Transcription with owl audio file\n');
 
     const form = new FormData();
     const audioPath = './owl option 2 SENTENCE.mp3';
@@ -16,7 +16,7 @@ async function testTranscription() {
     form.append('audio', fs.createReadStream(audioPath));
 
     try {
-        console.log('📤 Sending audio to transcription endpoint...');
+        console.log('📤 Sending audio to transcription endpoint');
         const response = await fetch('http://localhost:4000/transcribe', {
             method: 'POST',
             body: form,
@@ -35,7 +35,7 @@ async function testTranscription() {
         console.log('\n---\n');
 
         // Now test AI summarization
-        console.log('🤖 Testing AI Summarization...');
+        console.log('🤖 Testing AI Summarization');
         const summaryResponse = await fetch('http://localhost:4000/summarize', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

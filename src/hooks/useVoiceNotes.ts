@@ -19,6 +19,12 @@ export function useVoiceNotes() {
   const retryTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const hasProcessedQueue = useRef(false);
 
+  // Keep a ref to notes for async access (avoids stale closures)
+  const notesRef = useRef<VoiceNote[]>([]);
+  useEffect(() => {
+    notesRef.current = notes;
+  }, [notes]);
+
   // Load notes and auto-process pending transcriptions
   useEffect(() => {
     (async () => {
@@ -34,7 +40,7 @@ export function useVoiceNotes() {
       // Auto-process queue on app load (once)
       if (pending > 0 && !hasProcessedQueue.current) {
         hasProcessedQueue.current = true;
-        console.log(`Found ${pending} pending transcriptions, processing...`);
+        console.log(`Found ${pending} pending transcriptions, processing`);
         // Small delay to let UI render first
         setTimeout(() => {
           processTranscriptionQueue();
@@ -53,11 +59,11 @@ export function useVoiceNotes() {
   }, [notes, isLoading]);
 
   const addNote = useCallback((note: VoiceNote) => {
-    setNotes(prev => [note, ...prev]);
+    setNotes(prev => [note].concat(prev));
   }, []);
 
   const updateNote = useCallback((id: string, partial: Partial<VoiceNote>) => {
-    setNotes(prev => prev.map(n => (n.id === id ? { ...n, ...partial } : n)));
+    setNotes(prev => prev.map(n => (n.id === id ? Object.assign({}, n, partial) : n)));
   }, []);
 
   const deleteNote = useCallback((id: string) => {
@@ -87,14 +93,18 @@ export function useVoiceNotes() {
     [addNote]
   );
 
-  // Single transcription attempt with retry logic
+  /**
+   * Transcribe a note with automatic retry logic
+   * Uses notesRef to ensure access to latest state during retries
+   */
   const transcribeNote = useCallback(async (id: string, audioUri: string, isRetry = false) => {
     console.log(`[transcribeNote] Starting transcription for note ${id}, isRetry: ${isRetry}`);
 
     // For retry attempts, check if note exists and get retry count
     let retryCount = 0;
     if (isRetry) {
-      const note = notes.find(n => n.id === id);
+      // Use ref to get latest notes to avoid stale closures
+      const note = notesRef.current.find(n => n.id === id);
       if (!note) {
         console.error(`[transcribeNote] Note not found for retry: ${id}`);
         return;
@@ -131,8 +141,6 @@ export function useVoiceNotes() {
       });
     } catch (err: any) {
       console.error('[transcribeNote] Transcription error:', err);
-      console.error('[transcribeNote] Error message:', err.message);
-      console.error('[transcribeNote] Error stack:', err.stack);
 
       const newRetryCount = retryCount + 1;
 
@@ -159,19 +167,21 @@ export function useVoiceNotes() {
         Alert.alert('Transcription error', `${err.message || 'Unknown error'}. Will retry automatically.`);
       }
     }
-  }, [notes, updateNote]);
+  }, [updateNote]);
 
-  // Process all queued transcriptions
+  /**
+   * Process all queued transcriptions
+   */
   const processTranscriptionQueue = useCallback(async () => {
     if (processingQueue.current) {
-      console.log('Queue already processing...');
+      console.log('Queue already processing');
       return;
     }
 
     processingQueue.current = true;
-    const pending = notes.filter(n => n.needsTranscription && n.transcriptStatus !== 'pending');
+    const pending = notesRef.current.filter(n => n.needsTranscription && n.transcriptStatus !== 'pending');
 
-    console.log(`Processing ${pending.length} queued transcriptions...`);
+    console.log(`Processing ${pending.length} queued transcriptions`);
 
     for (const note of pending) {
       await transcribeNote(note.id, note.audioUri, true);
@@ -181,11 +191,13 @@ export function useVoiceNotes() {
 
     processingQueue.current = false;
     console.log('Queue processing complete');
-  }, [notes, transcribeNote]);
+  }, [transcribeNote]);
 
-  // Manual retry for a specific note
+  /**
+   * Manual retry for a specific note
+   */
   const retryTranscription = useCallback(async (id: string) => {
-    const note = notes.find(n => n.id === id);
+    const note = notesRef.current.find(n => n.id === id);
     if (!note) return;
 
     // Clear any existing timeout
@@ -198,7 +210,7 @@ export function useVoiceNotes() {
     // Reset retry count for manual retry
     updateNote(id, { retryCount: 0 });
     await transcribeNote(id, note.audioUri, false);
-  }, [notes, updateNote, transcribeNote]);
+  }, [updateNote, transcribeNote]);
 
   const aiAssist = useCallback(
     async (id: string, transcript?: string) => {

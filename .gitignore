@@ -38,8 +38,8 @@ yarn-error.*
 
 # generated native folders (but allow our custom modules)
 /ios
-/android
-# Allow our custom native modules
+# /android
+# /ios# Allow our custom native modules
 !/android/app/src/main/java/**/Native*.kt
 !/android/app/src/main/java/**/MainApplication.kt
 !/ios/Native*.swift

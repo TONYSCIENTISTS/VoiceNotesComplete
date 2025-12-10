@@ -35,24 +35,6 @@ export function formatRelativeTime(date: string | Date): string {
     return then.toLocaleDateString();
 }
 
-/**
- * Generate excerpt from transcript
- * @param transcript - Full transcript text
- * @param maxLength - Maximum length of excerpt
- * @returns Truncated excerpt with ellipsis if needed
- */
-export function generateExcerpt(transcript: string | undefined, maxLength: number = 100): string {
-    if (!transcript || transcript.trim().length === 0) {
-        return 'No transcript yet';
-    }
-
-    const cleaned = transcript.trim();
-    if (cleaned.length <= maxLength) {
-        return cleaned;
-    }
-
-    return cleaned.substring(0, maxLength).trim() + '…';
-}
 
 /**
  * Generate unique ID for voice notes

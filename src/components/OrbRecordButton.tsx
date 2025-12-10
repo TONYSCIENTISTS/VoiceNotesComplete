@@ -128,7 +128,7 @@ export const OrbRecordButton: React.FC<OrbRecordButtonProps> = ({
     // Audio Reactive Pulse (Dynamic Scale & Glow)
     // We mix the static "scale" (which handles the pop) with the audio level.
     // However, since we used `scale` for the pop, we should add the audio effect.
-    // Animated.add(scale, smoothLevel.interpolate(...))
+    // Animated.add(scale, smoothLevel.interpolate)
 
     // Scale Interpolation: Base scale + Audio Punch
     const finalScale = Animated.add(

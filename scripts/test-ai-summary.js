@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
 async function testAISummary() {
-    console.log('🤖 Testing AI Summarization with mock transcript...\n');
+    console.log('🤖 Testing AI Summarization with mock transcript\n');
 
     // Mock transcript (simulating what Whisper would return)
     const mockTranscript = `
@@ -12,7 +12,7 @@ async function testAISummary() {
   `.trim();
 
     try {
-        console.log('📤 Sending transcript to AI summarization endpoint...');
+        console.log('📤 Sending transcript to AI summarization endpoint');
         console.log('📝 Transcript length:', mockTranscript.length, 'characters\n');
 
         const response = await fetch('http://localhost:4000/summarize', {

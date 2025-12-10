@@ -95,7 +95,7 @@ export const HistoryScreen: React.FC = () => {
             case 'done':
                 return { color: '#42f59e', icon: 'checkmark-circle', label: 'Done' };
             case 'pending':
-                return { color: '#00D4FF', icon: 'time', label: 'Transcribing...' };
+                return { color: '#00D4FF', icon: 'time', label: 'Transcribing' };
             case 'error':
                 return {
                     color: '#ff3366',
@@ -178,7 +178,7 @@ export const HistoryScreen: React.FC = () => {
                                 {item.transcript
                                     ? item.transcript
                                     : item.transcriptStatus === 'pending'
-                                        ? 'Transcribing your voice note...'
+                                        ? 'Transcribing your voice note'
                                         : item.transcriptStatus === 'error'
                                             ? 'Transcription failed - tap to retry'
                                             : 'No transcript yet'}
@@ -194,40 +194,7 @@ export const HistoryScreen: React.FC = () => {
                                 </View>
                             )}
 
-                            {/* Metadata Section */}
-                            <View style={styles.metadataSection}>
-                                <View style={styles.metadataRow}>
-                                    <Ionicons name="finger-print-outline" size={12} color="#666" />
-                                    <Text style={styles.metadataLabel}>ID:</Text>
-                                    <Text style={styles.metadataValue} numberOfLines={1} ellipsizeMode="middle">
-                                        {item.id}
-                                    </Text>
-                                </View>
-
-                                <View style={styles.metadataRow}>
-                                    <Ionicons name="musical-note-outline" size={12} color="#666" />
-                                    <Text style={styles.metadataLabel}>Audio:</Text>
-                                    <Text style={styles.metadataValue} numberOfLines={1} ellipsizeMode="middle">
-                                        {item.audioUri.split('/').pop() || item.audioUri}
-                                    </Text>
-                                </View>
-
-                                <View style={styles.metadataRow}>
-                                    <Ionicons name="timer-outline" size={12} color="#666" />
-                                    <Text style={styles.metadataLabel}>Duration:</Text>
-                                    <Text style={styles.metadataValue}>
-                                        {item.durationMs}ms ({formatDuration(item.durationMs)})
-                                    </Text>
-                                </View>
-
-                                <View style={styles.metadataRow}>
-                                    <Ionicons name="calendar-outline" size={12} color="#666" />
-                                    <Text style={styles.metadataLabel}>Created:</Text>
-                                    <Text style={styles.metadataValue}>
-                                        {new Date(item.createdAt).toLocaleString()}
-                                    </Text>
-                                </View>
-                            </View>
+                            {/* Metadata Section - REMOVED for cleaner UI */}
 
                             {/* Footer Row */}
                             <View style={styles.cardFooter}>

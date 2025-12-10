@@ -42,7 +42,7 @@ export const LipsyncScreen: React.FC = () => {
                 {isLoading && (
                     <View style={styles.loadingOverlay}>
                         <ActivityIndicator size="large" color="#00D4FF" />
-                        <Text style={styles.loadingText}>Loading 3D Avatar...</Text>
+                        <Text style={styles.loadingText}>Loading 3D Avatar</Text>
                     </View>
                 )}
 
@@ -50,6 +50,7 @@ export const LipsyncScreen: React.FC = () => {
                 <WebView
                     ref={webViewRef}
                     source={{ uri: 'https://appviewerv1.web.app' }}
+                    // source={{ uri: 'http://192.168.1.37:5175' }}
                     style={styles.fullscreenWebview}
                     onMessage={(event) => {
                         if (event.nativeEvent.data === 'APP_READY') {

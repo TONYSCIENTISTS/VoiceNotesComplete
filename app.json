@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.strapssh.VoiceNotesComplete"
+      "bundleIdentifier": "com.strapabl.VoiceNotesComplete"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +24,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.strapssh.VoiceNotesComplete",
+      "package": "com.strapabl.VoiceNotesComplete",
       "permissions": [
         "INTERNET",
         "RECORD_AUDIO",

@@ -27,7 +27,9 @@ export function useAudioPlayer(uri?: string) {
 
                 soundRef.current = sound;
                 setIsLoaded(true);
-                setDurationMs(status.durationMillis ?? 0);
+                if (status.isLoaded) {
+                    setDurationMs(status.durationMillis ?? 0);
+                }
 
                 sound.setOnPlaybackStatusUpdate(st => {
                     if (!st.isLoaded) return;
